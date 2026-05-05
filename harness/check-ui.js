@@ -49,7 +49,9 @@ export function checkUi() {
   assert(rainMap.includes('data-rain-belt-animation="position"'), 'RainBeltMap 必须标记雨带移动动画。', errors);
   assert(rainMap.includes('rain-belt-ghost') && rainMap.includes('markerEnd'), 'RainBeltMap 必须包含雨带残影和方向箭头。', errors);
   assert(rainMap.includes('nasa-china-july-crop.jpg') && rainMap.includes('WeatherImageWindow'), 'RainBeltMap 必须使用 NASA 真实底图和阶段影像窗口。', errors);
-  assert(rainMap.includes('routeSegments') && rainMap.includes('strokeDashoffset'), 'RainBeltMap 必须包含分段曲线路径和流动输送粒子。', errors);
+  assert(rainMap.includes('routeSegments') && rainMap.includes('data-flow-path="true"'), 'RainBeltMap 必须包含分段曲线路径和流动输送线。', errors);
+  assert(!rainMap.includes('strokeDasharray'), 'RainBeltMap 的运移路径不应保留显式虚线样式。', errors);
+  assert(rainMap.includes('data-fullscreen-button="true"') && rainMap.includes('requestFullscreen'), 'RainBeltMap 必须支持全屏查看。', errors);
   assert(rainMap.includes('motion.div') && rainMap.includes('animate={{'), '雨带需要使用 Framer Motion 动画。', errors);
   assert(stageCard.includes('本阶段结论') && stageCard.includes('降水特征') && stageCard.includes('课堂讲解点'), 'StageCard 必须展示重点结论、降水特征和课堂讲解点。', errors);
   assert(css.includes('@tailwind') && css.includes('cloudDrift') && css.includes('currentMove'), '样式必须包含 Tailwind 和云雨/水汽动画。', errors);

@@ -66,6 +66,54 @@ button {
   transform: rotate(12deg);
 }
 
+.weather-image-window {
+  contain: layout paint style;
+  transform: translateZ(0);
+}
+
+.weather-image-window figure,
+.weather-image-window img {
+  backface-visibility: hidden;
+  transform: translateZ(0);
+}
+
+[data-ui-component='rain-belt-map']:fullscreen {
+  min-height: 100vh;
+  height: 100vh;
+  width: 100vw;
+  border-radius: 0;
+  border: 0;
+}
+
+[data-ui-component='rain-belt-map']:fullscreen .weather-image-window {
+  left: 24px;
+  top: 24px;
+  transform: translateZ(0) scale(1.08);
+  transform-origin: left top;
+}
+
+[data-ui-component='rain-belt-map']:fullscreen svg {
+  height: 100vh;
+}
+
+.stage-card {
+  contain: layout paint style;
+}
+
+.stage-card-body {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(14, 165, 233, 0.36) transparent;
+}
+
+.stage-card-body::-webkit-scrollbar {
+  width: 5px;
+}
+
+.stage-card-body::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(14, 165, 233, 0.28);
+}
+
 .control-button {
   display: inline-flex;
   min-height: 46px;
@@ -119,12 +167,6 @@ button {
   }
   to {
     background-position: 0 0, 340px 0;
-  }
-}
-
-@media (max-width: 1024px) {
-  .stage-card {
-    min-height: 520px;
   }
 }
 

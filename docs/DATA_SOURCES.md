@@ -5,7 +5,7 @@
 ## 关键校正
 
 - 用户初始建议包含“3—4月：华南前汛期开始”。资料显示华南前汛期通常指 4—6 月，中国天气网称华南每年受夏季风影响最早为“4月前后”，中国气象局科普称常年开始时间为 4月6日。因此页面最终写为“4月前后：华南前汛期启动”，未把 3 月作为主雨带阶段。
-- 5 月节点没有写成独立稳定雨带，而写成“江南多雨过渡、北进中的摆动”，因为资料更多支持 5 月前后雨季自南向北开启、6 月中旬后梅雨区明显建立。
+- 5 月节点没有写成独立稳定雨带，而写成“华南—江南多雨过渡、北进中的摆动”，因为资料更多支持 5 月前后雨季自南向北开启，6 月中旬后江淮梅雨区才更稳定建立。
 - 9—10 月节点写成“南撤、结束”，并保留“华南沿海仍可能受台风或热带系统影响”，避免误导为全国完全无雨。
 
 ## 气象资料来源
@@ -36,7 +36,7 @@
 
 ### CMA_SUBTROPICAL_HIGH
 
-- 资料来源名称：中国气象局《图解副热带高压》；并参考中国气象局公共科普中关于副热带高压北抬与雨带阶段性移动的描述
+- 资料来源名称：中国气象局转载科技日报《北方也有“回南天”？》；并参考中国气象局公共科普中关于副热带高压北抬与雨带阶段性移动的描述
 - 网址：https://www.cma.gov.cn/2011xwzx/2011xmtjj/202507/t20250708_7198365.html
 - 采用内容：中国气象局媒体转载资料提到我国雨带有阶段性南北进退规律：4—6 月华南前汛期，6—7 月江淮梅雨，7—8 月华北和东北雨季；北方湿热与副热带高压北抬有关。
 - 对应页面节点：jiangnan-rains、jianghuai-meiyu。
@@ -101,7 +101,7 @@
 
 - 资料来源名称：NASA Blue Marble Next Generation July 2004 base map
 - 网址：https://assets.science.nasa.gov/content/dam/science/esd/eo/images/bmng/bmng-base/july/world.200407.3x5400x2700.jpg
-- 采用内容：NASA 真实色全球地球底图。下载后裁剪出东亚/中国区域，保存为 `public/images/nasa-china-july-crop.jpg`；同时裁剪出华南、长江中下游、华北东北三张区域影像参考窗口。
+- 采用内容：NASA 真实色全球地球底图。下载后裁剪出东亚/中国区域，保存为 `public/images/nasa-china-july-crop.jpg`；同时从该底图扩大范围裁剪出华南、长江中下游、华北东北三张 960×570 区域影像参考窗口。
 - 对应页面节点：`RainBeltMap.jsx` 的真实卫星底图与三张区域影像参考窗口。
 - 表达方式：NASA 影像用于真实地表纹理和课堂视觉可信度；雨带云团、路径和降水范围仍是教学概括动画，不是逐日卫星云图或业务级降水产品。
 
@@ -118,8 +118,8 @@
 | 页面阶段 ID | 页面时间节点 | 采用资料标识 | 说明 |
 | --- | --- | --- | --- |
 | sc-pre-flood | 4月前后 | WEATHER_REGIONAL_RAINSTORM, RAINY_SEASONS_REVIEW, CMA_CHINA_PRECIPITATION, CMA_STORM_FAMILY, WEATHER_RAIN_SEASON_DISTRIBUTION | 华南前汛期 4—6 月、4 月前后最早受夏季风影响。 |
-| jiangnan-rains | 5月-6月上旬 | CMA_SUMMER_MONSOON_RAINSTORM, WEATHER_RAIN_IMPACT_CHINA, CMA_SUBTROPICAL_HIGH | 中东部雨季自南向北开启，江南作为北进过渡和多雨区域。 |
+| jiangnan-rains | 5月-6月上旬 | CMA_SUMMER_MONSOON_RAINSTORM, WEATHER_RAIN_IMPACT_CHINA, CMA_SUBTROPICAL_HIGH | 中东部雨季自南向北开启，华南北部到江南作为北进过渡和多雨区域，不表示江淮梅雨已稳定建立。 |
 | jianghuai-meiyu | 6月中旬-7月上旬 | WEATHER_REGIONAL_RAINSTORM, CMA_SUBTROPICAL_HIGH, RAINY_SEASONS_REVIEW, CMA_STORM_FAMILY | 长江中下游、江淮一带梅雨，持续性阴雨和降水集中。 |
-| north-northeast-rains | 7月中旬-8月下旬 | CMA_SUMMER_MONSOON_RAINSTORM, WEATHER_REGIONAL_RAINSTORM, RAINY_SEASONS_REVIEW, CMA_STORM_FAMILY | 主雨带北移，华北、东北进入降水集中期。 |
+| north-northeast-rains | 7月中旬-8月下旬 | CMA_SUMMER_MONSOON_RAINSTORM, WEATHER_REGIONAL_RAINSTORM, RAINY_SEASONS_REVIEW, CMA_STORM_FAMILY | 主雨带北移到华北—东北通道，北方进入降水集中期。 |
 | south-retreat | 8月下旬-9月 | CMA_SUMMER_MONSOON_RAINSTORM, WEATHER_REGIONAL_RAINSTORM, EASM_RETREAT_REVIEW | 夏季风减弱，雨带由北向南撤退，北方降水减少。 |
 | rainy-season-end | 10月前后 | WEATHER_REGIONAL_RAINSTORM, CMA_SUMMER_MONSOON_RAINSTORM, EASM_RETREAT_REVIEW, WEATHER_RAIN_SEASON_DISTRIBUTION | 东部季风雨季收尾，华南沿海仍可能受热带系统影响。 |

@@ -151,3 +151,70 @@
 
 - `npm.cmd run check`：通过。
 - `npm.cmd run build`：通过。
+
+## Builder 科学性优化记录（2026-05-05）
+
+### 已修复问题
+
+- 将 5月-6月上旬阶段从“雨带推进到江南/江南多雨”改为“华南—江南多雨过渡”，明确这是北推摆动阶段，不表示江淮梅雨已经稳定建立。
+- 将 `CMA_SUBTROPICAL_HIGH` 的资料名称改为实际链接对应的中国气象局转载科技日报《北方也有“回南天”？》，避免资料追溯名称和 URL 不一致。
+- 将华北、东北雨季的雨带热点从偏东北的 `(77,32)` 调整为更居中的 `(75,34)`，并用区域高亮同时标记华北和东北。
+- 将北跳、南撤路径同步改成华北—东北通道的分段曲线，保持视觉表达与阶段文案一致。
+
+### 命令结果
+
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check`：通过，content、sources、ui 三项核查均通过。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run build`：通过，Vite v5.4.21 构建成功，2065 modules transformed。
+
+## Builder UI 跳动修复记录（2026-05-05）
+
+### 复现结果
+
+- 新增 `harness/check-layout-stability.js`，通过本机 Chrome/Edge DevTools Protocol 以 1440×900 打开页面，连续点击月份按钮并采样关键元素 bounding box。
+- 修复前探针复现到跳动：`stageCard.heightRange=97px`，`map.heightRange=97px`，`controls/monthNavigator/timeline.topRange=97px`。
+- `weather-image-window` 外层尺寸原本稳定，但仍有图片切换闪白风险，因此同步加固图片预加载和合成层。
+
+### 已修复问题
+
+- `StageCard.jsx` 将阶段卡固定为 `620px` 高度，长内容放入卡内滚动，不再让不同阶段文案撑高外部布局。
+- `StageCard.jsx` 从 `AnimatePresence mode="popLayout"` 改为 `mode="wait"`，避免退出元素影响布局测量。
+- `RainBeltMap.jsx` 为地图主容器补充 `data-ui-component="rain-belt-map"`，并给 NASA 小窗交叉淡入的图片层设置稳定 `zIndex`。
+- `index.html` 增加 NASA 底图和三张区域图的 `<link rel="preload" as="image">`，降低首次切换闪白概率。
+- `index.css` 为 NASA 小窗图片和阶段卡增加合成/布局隔离，并美化阶段卡内部滚动条。
+
+### 命令结果
+
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check:layout`：通过。修复后 `map`、`stageCard`、`weather`、`controls`、`monthNavigator`、`timeline` 的高度和 top 变化均为 `0px`。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check`：通过。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run build`：通过，Vite v5.4.21 构建成功，2065 modules transformed。
+
+## Builder 雨带残影修复记录（2026-05-05）
+
+### 已修复问题
+
+- 用户反馈从第二图开始仍有一个雨带轮廓停留在第一图位置。定位到 `RainBeltMap.jsx` 中 `.rain-belt-ghost` 原本按 `score.ghostOpacity` 长时间保留，导致上一阶段轮廓被误读为未消失。
+- 将 `.rain-belt-ghost` 改为按阶段 `key` 重新挂载，只在切换瞬间从上一阶段位置淡出，`0.42s` 后透明度归零。
+- `harness/check-layout-stability.js` 增加 `.rain-belt-ghost` 透明度核查，要求月份切换 `690ms` 后残影透明度不高于 `0.05`。
+
+### 命令结果
+
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check:layout`：通过。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check`：通过。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run build`：通过，Vite v5.4.21 构建成功，2065 modules transformed。
+
+## Builder 虚线箭头与全屏查看修复记录（2026-05-05）
+
+### 已修复问题
+
+- 移除 `RainBeltMap.jsx` 中所有显式 `strokeDasharray` 虚线样式，运移路径改为实线曲线和 `pathLength` 流光动画。
+- 东南水汽输送线从虚线改为实线流光，并保留方向箭头；停滞环改为实线脉冲环。
+- NASA 区域影像窗口外框改用 inset ring，避免放大或浏览器缩放时出现边框不完整。
+- 三张 NASA 区域图从 `nasa-china-july-crop.jpg` 重新扩大裁剪范围，并输出为 960×570：`nasa-window-south-china.jpg`、`nasa-window-yangtze.jpg`、`nasa-window-north-east.jpg`。
+- 新增地图全屏按钮，并在 NASA 区域影像窗口加入全屏查看按钮。
+- `check-ui.js` 增加核查：`RainBeltMap.jsx` 不应再包含 `strokeDasharray`，且必须包含全屏查看能力。
+
+### 命令结果
+
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check`：通过。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run check:layout`：通过，NASA 小窗扩大到 224px 后仍无布局跳动。
+- `$env:Path='D:\APPS\python\projects\MCP-servers\.tools\node;' + $env:Path; npm.cmd run build`：通过，Vite v5.4.21 构建成功，2065 modules transformed。

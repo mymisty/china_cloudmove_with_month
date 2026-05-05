@@ -9,6 +9,7 @@
     "preview": "vite preview --host 0.0.0.0",
     "check": "node harness/run-all-checks.js",
     "check:content": "node harness/check-content.js",
+    "check:layout": "node harness/check-layout-stability.js",
     "check:ui": "node harness/check-ui.js",
     "check:sources": "node harness/check-sources.js"
   },

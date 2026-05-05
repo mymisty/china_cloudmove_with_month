@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { geoPath, geoTransform } from 'd3-geo';
-import { ArrowDown, ArrowUp, CircleDot, Waves } from 'lucide-react';
+import { ArrowDown, ArrowUp, CircleDot, Maximize2, Minimize2, Waves, X } from 'lucide-react';
 import { movementScore } from '../data/animationScore.js';
 
 const regions = [
@@ -16,7 +16,7 @@ const pathPoints = [
   { x: 65, y: 72 },
   { x: 70, y: 59 },
   { x: 72, y: 52 },
-  { x: 77, y: 32 },
+  { x: 75, y: 34 },
   { x: 72, y: 52 },
   { x: 65, y: 74 },
 ];
@@ -59,14 +59,14 @@ const routeSegments = [
     id: 'north-jump',
     stageId: 'north-northeast-rains',
     label: '北跳加强',
-    d: 'M72 52 C73 44 74 37 77 32',
+    d: 'M72 52 C72.5 46 73 40 75 34',
     color: '#0284c7',
   },
   {
     id: 'retreat-back',
     stageId: 'south-retreat',
     label: '南撤回落',
-    d: 'M77 32 C75 41 73 48 72 52',
+    d: 'M75 34 C74 42 73 48 72 52',
     color: '#0f766e',
   },
   {
@@ -106,6 +106,10 @@ const highlightProvinceNames = {
   'north-northeast-rains': ['北京市', '天津市', '河北省', '山东省', '辽宁省', '吉林省', '黑龙江省'],
   'south-retreat': ['河南省', '安徽省', '江苏省', '湖北省', '湖南省', '江西省'],
   'rainy-season-end': ['广东省', '广西壮族自治区', '海南省', '福建省', '台湾省'],
+};
+
+const activeRegionIdsByStage = {
+  'north-northeast-rains': ['north', 'northeast'],
 };
 
 function activeWindowFor(stageId) {
@@ -197,32 +201,44 @@ function MotionScore({ stage, score }) {
   );
 }
 
-function WeatherImageWindow({ stage }) {
+function WeatherImageWindow({ stage, onOpenImage }) {
   const activeWindow = activeWindowFor(stage.id);
 
   return (
-    <div className="absolute left-5 top-16 z-30 w-48 rounded-lg border border-white/45 bg-slate-950/20 p-2 shadow-[0_18px_45px_rgba(15,23,42,0.22)] backdrop-blur">
-      <div className="mb-2 text-xs font-black text-white drop-shadow">NASA 区域影像参考</div>
-      <div className="relative h-[140px] overflow-hidden rounded-md border border-white/35 bg-slate-900">
+    <div className="weather-image-window absolute left-5 top-16 z-30 h-[224px] w-56 overflow-visible rounded-lg bg-slate-950/25 p-2 shadow-[0_18px_45px_rgba(15,23,42,0.22)] ring-1 ring-inset ring-white/45 backdrop-blur">
+      <div className="flex h-6 items-center justify-between gap-2">
+        <div className="truncate text-xs font-black leading-6 text-white drop-shadow">NASA 区域影像参考</div>
+        <button
+          type="button"
+          onClick={() => onOpenImage(activeWindow)}
+          className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-white/18 text-white ring-1 ring-white/35 transition hover:bg-white/28"
+          aria-label="全屏查看 NASA 区域影像"
+          title="全屏查看"
+        >
+          <Maximize2 className="h-3.5 w-3.5" />
+        </button>
+      </div>
+      <div className="relative mt-2 h-[160px] overflow-hidden rounded-md bg-slate-900 ring-1 ring-inset ring-white/40">
         {imageWindows.map((window) => {
           const active = window.id === activeWindow.id;
 
           return (
             <motion.figure
               key={window.id}
-              className="absolute inset-0"
+              className="absolute inset-0 m-0"
               initial={false}
               animate={{ opacity: active ? 1 : 0 }}
-              transition={{ duration: 0.28, ease: 'easeOut' }}
+              transition={{ duration: 0.22, ease: 'linear' }}
+              style={{ pointerEvents: active ? 'auto' : 'none', willChange: 'opacity', zIndex: active ? 2 : 1 }}
             >
               <img
                 src={window.src}
                 alt={window.title}
                 loading="eager"
                 decoding="async"
-                className="h-28 w-full object-cover"
+                className="absolute inset-0 h-full w-full object-cover"
               />
-              <figcaption className="bg-slate-950/70 px-2 py-1.5 text-xs font-bold text-white">
+              <figcaption className="absolute inset-x-0 bottom-0 h-7 truncate bg-slate-950/72 px-2 text-xs font-bold leading-7 text-white">
                 {window.title}
               </figcaption>
             </motion.figure>
@@ -230,7 +246,7 @@ function WeatherImageWindow({ stage }) {
         })}
       </div>
 
-      <div className="mt-2 grid grid-cols-3 gap-1">
+      <div className="mt-2 grid h-1.5 grid-cols-3 gap-1">
         {imageWindows.map((window) => {
           const active = window.id === activeWindow.id;
           return (
@@ -247,6 +263,9 @@ function WeatherImageWindow({ stage }) {
 
 function RainBeltMap({ stage, stages, activeIndex }) {
   const [chinaAdminGeo, setChinaAdminGeo] = useState(null);
+  const [imageViewer, setImageViewer] = useState(null);
+  const [isMapFullscreen, setIsMapFullscreen] = useState(false);
+  const mapRef = useRef(null);
   const score = movementScore[stage.direction] ?? movementScore.north;
 
   useEffect(() => {
@@ -271,6 +290,24 @@ function RainBeltMap({ stage, stages, activeIndex }) {
     };
   }, []);
 
+  useEffect(() => {
+    const syncFullscreen = () => {
+      setIsMapFullscreen(document.fullscreenElement === mapRef.current);
+    };
+
+    document.addEventListener('fullscreenchange', syncFullscreen);
+    return () => document.removeEventListener('fullscreenchange', syncFullscreen);
+  }, []);
+
+  const toggleMapFullscreen = async () => {
+    if (document.fullscreenElement) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    await mapRef.current?.requestFullscreen?.();
+  };
+
   const provincePaths = useMemo(() => {
     if (!chinaAdminGeo?.features?.length) return [];
 
@@ -286,17 +323,33 @@ function RainBeltMap({ stage, stages, activeIndex }) {
   const previousStage = stages[Math.max(activeIndex - 1, 0)];
   const isPause = stage.direction === 'pause';
   const activeProvinceSet = new Set(highlightProvinceNames[stage.id] ?? []);
+  const activeRegionIdSet = new Set(activeRegionIdsByStage[stage.id] ?? []);
   const activeSegmentIndex = Math.max(
     0,
     routeSegments.findIndex((segment) => segment.stageId === stage.id),
   );
   const completedSegmentIds = new Set(routeSegments.slice(0, activeSegmentIndex).map((segment) => segment.id));
   return (
-    <section className="relative min-h-[480px] overflow-hidden rounded-[20px] border border-cyan-900/10 bg-slate-900 shadow-climate backdrop-blur-xl lg:min-h-0">
+    <section
+      ref={mapRef}
+      className="relative min-h-[480px] overflow-hidden rounded-[20px] border border-cyan-900/10 bg-slate-900 shadow-climate backdrop-blur-xl lg:min-h-0"
+      data-ui-component="rain-belt-map"
+    >
       <RainStreaks score={score} />
       <DirectionBadge direction={stage.direction} score={score} />
       <MotionScore stage={stage} score={score} />
-      <WeatherImageWindow stage={stage} />
+      <WeatherImageWindow stage={stage} onOpenImage={setImageViewer} />
+
+      <button
+        type="button"
+        onClick={toggleMapFullscreen}
+        className="absolute right-5 top-5 z-30 inline-flex items-center gap-2 rounded-md bg-white/80 px-3 py-2 text-sm font-black text-cyan-950 shadow-sm ring-1 ring-cyan-900/10 backdrop-blur transition hover:bg-cyan-50"
+        data-fullscreen-button="true"
+        aria-label={isMapFullscreen ? '退出全屏地图' : '全屏查看地图'}
+      >
+        {isMapFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+        {isMapFullscreen ? '退出全屏' : '全屏地图'}
+      </button>
 
       <div className="absolute inset-x-0 top-0 h-28 bg-gradient-to-b from-white/75 to-transparent" />
       <div className="absolute bottom-5 left-5 z-20 flex items-center gap-2 rounded-md border border-cyan-800/10 bg-white/65 px-3 py-2 text-sm font-semibold text-slate-600 backdrop-blur">
@@ -305,8 +358,9 @@ function RainBeltMap({ stage, stages, activeIndex }) {
       </div>
 
       <motion.div
+        key={`ghost-${stage.id}`}
         className="rain-belt-ghost pointer-events-none absolute z-[18] rounded-full"
-        animate={{
+        initial={{
           top: previousStage.belt.top,
           left: previousStage.belt.left,
           width: previousStage.belt.width,
@@ -314,7 +368,8 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           rotate: previousStage.belt.rotate,
           opacity: activeIndex === 0 ? 0 : score.ghostOpacity,
         }}
-        transition={stageShiftTransition}
+        animate={{ opacity: 0 }}
+        transition={{ duration: 0.42, ease: 'easeOut' }}
         style={{ willChange: 'top, left, width, height, transform, opacity' }}
       >
         <div className="absolute inset-0 rounded-full border border-cyan-200/45 bg-cyan-300/10 blur-md" />
@@ -430,7 +485,6 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           fill="none"
           stroke="#475569"
           strokeWidth="0.45"
-          strokeDasharray="1.4 1.2"
           opacity="0.58"
         />
         <text x="55.5" y="48.6" className="fill-slate-600 text-[2.5px] font-bold">
@@ -441,7 +495,6 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           fill="none"
           stroke="#0891b2"
           strokeWidth="0.42"
-          strokeDasharray="1.4 1.2"
           opacity="0.55"
         />
         <text x="63.5" y="59.5" className="fill-cyan-800 text-[2.5px] font-bold">
@@ -461,7 +514,6 @@ function RainBeltMap({ stage, stages, activeIndex }) {
               stroke={active ? score.pathColor : segment.color}
               strokeWidth={active ? score.segmentWidth : 0.62}
               strokeLinecap="round"
-              strokeDasharray={active ? '5 3' : '2 4'}
               initial={false}
               animate={{
                 pathLength: active ? 1 : completed ? 1 : 0.18,
@@ -479,16 +531,16 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           return (
             <motion.path
               key={`flow-${segment.id}`}
+              data-flow-path="true"
               d={segment.d}
               fill="none"
               stroke={score.pathColor}
-              strokeWidth="1.55"
+              strokeWidth="1.8"
               strokeLinecap="round"
-              strokeDasharray="0.1 7"
               markerEnd={score.marker}
-              initial={{ strokeDashoffset: 10, opacity: 0 }}
-              animate={{ strokeDashoffset: [12, 0], opacity: [0.18, 0.9, 0.28] }}
-              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+              initial={{ pathLength: 0.06, opacity: 0 }}
+              animate={{ pathLength: [0.06, 1, 1], opacity: [0, 0.86, 0] }}
+              transition={{ duration: 1.65, repeat: Infinity, ease: 'easeInOut' }}
             />
           );
         })}
@@ -502,7 +554,6 @@ function RainBeltMap({ stage, stages, activeIndex }) {
               fill="none"
               stroke="#f59e0b"
               strokeWidth="0.75"
-              strokeDasharray="1.8 1.4"
               animate={{ rotate: 360, opacity: [0.25, 0.75, 0.25] }}
               transition={{ duration: 3.2, repeat: Infinity, ease: 'linear' }}
               style={{ transformOrigin: `${stage.hotspot.x}px ${stage.hotspot.y}px` }}
@@ -532,7 +583,8 @@ function RainBeltMap({ stage, stages, activeIndex }) {
 
         {regions.map((region) => {
           const active =
-            Math.abs(region.x - stage.hotspot.x) < 10 && Math.abs(region.y - stage.hotspot.y) < 11;
+            activeRegionIdSet.has(region.id) ||
+            (Math.abs(region.x - stage.hotspot.x) < 10 && Math.abs(region.y - stage.hotspot.y) < 11);
           return (
             <g key={region.id} data-region-active={active ? 'true' : 'false'}>
               <motion.circle
@@ -574,19 +626,20 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           }}
         />
 
-        <path
+        <motion.path
           d="M86 80 C80 75 74 66 70 59"
           fill="none"
           stroke="#06b6d4"
           strokeWidth="1"
           strokeLinecap="round"
-          strokeDasharray="3 2"
-          opacity="0.72"
+          markerEnd="url(#arrowNorth)"
+          initial={false}
+          animate={{ pathLength: [0.2, 1, 1], opacity: [0.32, 0.78, 0.42] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
         />
-        <path d="M70 59 L72 61 L69 62" fill="none" stroke="#06b6d4" strokeWidth="0.8" strokeLinecap="round" />
       </svg>
 
-      <div className="absolute right-5 top-5 z-20 w-44 rounded-md border border-cyan-800/10 bg-white/75 p-3 text-sm text-slate-700 shadow-sm backdrop-blur">
+      <div className="absolute right-5 top-16 z-20 w-44 rounded-md border border-cyan-800/10 bg-white/75 p-3 text-sm text-slate-700 shadow-sm backdrop-blur">
         <div className="font-bold text-cyan-950">{stage.time}</div>
         <div className="mt-1 leading-5">{stage.region}</div>
         <div className="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
@@ -597,6 +650,34 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           />
         </div>
       </div>
+
+      {imageViewer && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/92 p-6"
+          role="dialog"
+          aria-modal="true"
+          aria-label="NASA 区域影像全屏查看"
+        >
+          <button
+            type="button"
+            onClick={() => setImageViewer(null)}
+            className="absolute right-5 top-5 inline-flex h-11 w-11 items-center justify-center rounded-full bg-white/12 text-white ring-1 ring-white/25 transition hover:bg-white/20"
+            aria-label="关闭全屏影像"
+          >
+            <X className="h-6 w-6" />
+          </button>
+          <figure className="m-0 w-full max-w-6xl">
+            <img
+              src={imageViewer.src}
+              alt={imageViewer.title}
+              className="max-h-[calc(100vh-112px)] w-full rounded-xl object-contain shadow-[0_24px_80px_rgba(0,0,0,0.42)] ring-1 ring-white/25"
+            />
+            <figcaption className="mt-4 text-center text-sm font-bold text-white/80">
+              {imageViewer.title} · NASA Blue Marble 区域影像参考
+            </figcaption>
+          </figure>
+        </div>
+      )}
     </section>
   );
 }
