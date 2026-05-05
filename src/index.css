@@ -1,0 +1,135 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  font-synthesis: none;
+  text-rendering: geometricPrecision;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100%;
+}
+
+button {
+  font: inherit;
+}
+
+.sky-flow {
+  background:
+    radial-gradient(circle at 15% 18%, rgba(255, 249, 196, 0.72), transparent 28%),
+    radial-gradient(circle at 82% 12%, rgba(125, 211, 252, 0.38), transparent 24%),
+    linear-gradient(142deg, #f7fcff 0%, #e4f8f7 42%, #fff6c8 100%);
+}
+
+.sky-flow::before,
+.sky-flow::after {
+  position: absolute;
+  inset: 0;
+  content: '';
+  opacity: 0.52;
+}
+
+.sky-flow::before {
+  background-image:
+    linear-gradient(115deg, transparent 0 41%, rgba(255, 255, 255, 0.72) 42%, transparent 47%),
+    linear-gradient(125deg, transparent 0 58%, rgba(6, 182, 212, 0.13) 59%, transparent 64%);
+  background-size: 360px 240px, 520px 320px;
+  animation: cloudDrift 22s linear infinite;
+}
+
+.sky-flow::after {
+  background:
+    radial-gradient(ellipse at 42% 28%, rgba(255, 255, 255, 0.72), transparent 35%),
+    radial-gradient(ellipse at 64% 86%, rgba(186, 230, 253, 0.42), transparent 34%);
+}
+
+.monsoon-current {
+  background:
+    linear-gradient(10deg, rgba(13, 148, 136, 0.18), transparent 62%),
+    repeating-linear-gradient(148deg, transparent 0 24px, rgba(14, 165, 233, 0.13) 25px 27px, transparent 28px 58px);
+  mask-image: linear-gradient(to top, #000, transparent);
+  animation: currentMove 14s linear infinite;
+}
+
+.rain-belt {
+  transform-origin: center;
+}
+
+.rain-drop {
+  transform: rotate(12deg);
+}
+
+.control-button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  border: 1px solid rgba(14, 116, 144, 0.16);
+  background: rgba(255, 255, 255, 0.74);
+  color: #0f4f63;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease,
+    color 160ms ease;
+}
+
+.control-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  border-color: rgba(8, 145, 178, 0.42);
+  background: #ecfeff;
+  color: #0e7490;
+}
+
+.control-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.38;
+}
+
+.control-button.primary {
+  background: linear-gradient(135deg, #0891b2, #14b8a6);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(14, 116, 144, 0.22);
+}
+
+.timeline-stage {
+  min-width: 0;
+}
+
+@keyframes cloudDrift {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 360px 0, 520px 0;
+  }
+}
+
+@keyframes currentMove {
+  from {
+    background-position: 0 0, 0 0;
+  }
+  to {
+    background-position: 0 0, 340px 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .stage-card {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 720px) {
+  .timeline-stage {
+    min-height: 82px;
+  }
+}
