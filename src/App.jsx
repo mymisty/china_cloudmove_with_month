@@ -10,6 +10,12 @@ import { monthMarkers } from './data/monthMarkers.js';
 import { rainBeltStages } from './data/rainBeltStages.js';
 
 const DEFAULT_AUTO_DELAY = 4200;
+const preloadImageUrls = [
+  '/images/nasa-china-july-crop.jpg',
+  '/images/nasa-window-south-china.jpg',
+  '/images/nasa-window-yangtze.jpg',
+  '/images/nasa-window-north-east.jpg',
+];
 
 function App() {
   const [activeIndex, setActiveIndex] = useState(0);
@@ -37,6 +43,13 @@ function App() {
 
     return () => window.clearTimeout(timer);
   }, [activeIndex, activeStage.duration, isPlaying]);
+
+  useEffect(() => {
+    preloadImageUrls.forEach((url) => {
+      const image = new Image();
+      image.src = url;
+    });
+  }, []);
 
   useEffect(() => {
     setSelectedMonthId((currentMonthId) => {

@@ -1,24 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { geoPath, geoTransform } from 'd3-geo';
 import { ArrowDown, ArrowUp, CircleDot, Waves } from 'lucide-react';
 import { movementScore } from '../data/animationScore.js';
 
 const regions = [
-  { id: 'northeast', label: '东北', x: 91, y: 27 },
-  { id: 'north', label: '华北', x: 75, y: 42 },
-  { id: 'jianghuai', label: '江淮', x: 77, y: 61 },
-  { id: 'jiangnan', label: '江南', x: 74, y: 69 },
-  { id: 'south', label: '华南', x: 69, y: 81 },
+  { id: 'northeast', label: '东北', x: 85, y: 22 },
+  { id: 'north', label: '华北', x: 69, y: 35 },
+  { id: 'jianghuai', label: '江淮', x: 72, y: 52 },
+  { id: 'jiangnan', label: '江南', x: 70, y: 59 },
+  { id: 'south', label: '华南', x: 65, y: 72 },
 ];
 
 const pathPoints = [
-  { x: 69, y: 81 },
-  { x: 74, y: 69 },
-  { x: 77, y: 61 },
-  { x: 85, y: 36 },
-  { x: 77, y: 61 },
-  { x: 69, y: 86 },
+  { x: 65, y: 72 },
+  { x: 70, y: 59 },
+  { x: 72, y: 52 },
+  { x: 77, y: 32 },
+  { x: 72, y: 52 },
+  { x: 65, y: 74 },
 ];
 
 const nasaCropBounds = {
@@ -28,47 +28,52 @@ const nasaCropBounds = {
   south: 10,
 };
 
+const stageShiftTransition = {
+  duration: 0.78,
+  ease: [0.22, 1, 0.36, 1],
+};
+
 const routeSegments = [
   {
     id: 'south-start',
     stageId: 'sc-pre-flood',
     label: '华南起步',
-    d: 'M69 86 C67 84 67 82 69 81',
+    d: 'M62 75 C63 74 64 73 65 72',
     color: '#0284c7',
   },
   {
     id: 'jiangnan-push',
     stageId: 'jiangnan-rains',
     label: '江南北推',
-    d: 'M69 81 C71 78 72 73 74 69',
+    d: 'M65 72 C66 68 68 62 70 59',
     color: '#0284c7',
   },
   {
     id: 'meiyu-pause',
     stageId: 'jianghuai-meiyu',
     label: '江淮停滞',
-    d: 'M74 69 C76 66 77 63 77 61',
+    d: 'M70 59 C71 57 72 54 72 52',
     color: '#f59e0b',
   },
   {
     id: 'north-jump',
     stageId: 'north-northeast-rains',
     label: '北跳加强',
-    d: 'M77 61 C79 52 82 43 85 36',
+    d: 'M72 52 C73 44 74 37 77 32',
     color: '#0284c7',
   },
   {
     id: 'retreat-back',
     stageId: 'south-retreat',
     label: '南撤回落',
-    d: 'M85 36 C83 47 80 55 77 61',
+    d: 'M77 32 C75 41 73 48 72 52',
     color: '#0f766e',
   },
   {
     id: 'season-end',
     stageId: 'rainy-season-end',
     label: '退出收束',
-    d: 'M77 61 C74 70 71 80 69 86',
+    d: 'M72 52 C70 61 67 69 65 74',
     color: '#64748b',
   },
 ];
@@ -198,21 +203,32 @@ function WeatherImageWindow({ stage }) {
   return (
     <div className="absolute left-5 top-16 z-30 w-48 rounded-lg border border-white/45 bg-slate-950/20 p-2 shadow-[0_18px_45px_rgba(15,23,42,0.22)] backdrop-blur">
       <div className="mb-2 text-xs font-black text-white drop-shadow">NASA 区域影像参考</div>
-      <AnimatePresence mode="wait">
-        <motion.figure
-          key={activeWindow.id}
-          initial={{ opacity: 0, y: 10, scale: 0.96 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -8, scale: 0.96 }}
-          transition={{ duration: 0.38, ease: 'easeOut' }}
-          className="overflow-hidden rounded-md border border-white/35 bg-slate-900"
-        >
-          <img src={activeWindow.src} alt={activeWindow.title} className="h-28 w-full object-cover" />
-          <figcaption className="bg-slate-950/70 px-2 py-1.5 text-xs font-bold text-white">
-            {activeWindow.title}
-          </figcaption>
-        </motion.figure>
-      </AnimatePresence>
+      <div className="relative h-[140px] overflow-hidden rounded-md border border-white/35 bg-slate-900">
+        {imageWindows.map((window) => {
+          const active = window.id === activeWindow.id;
+
+          return (
+            <motion.figure
+              key={window.id}
+              className="absolute inset-0"
+              initial={false}
+              animate={{ opacity: active ? 1 : 0 }}
+              transition={{ duration: 0.28, ease: 'easeOut' }}
+            >
+              <img
+                src={window.src}
+                alt={window.title}
+                loading="eager"
+                decoding="async"
+                className="h-28 w-full object-cover"
+              />
+              <figcaption className="bg-slate-950/70 px-2 py-1.5 text-xs font-bold text-white">
+                {window.title}
+              </figcaption>
+            </motion.figure>
+          );
+        })}
+      </div>
 
       <div className="mt-2 grid grid-cols-3 gap-1">
         {imageWindows.map((window) => {
@@ -298,7 +314,8 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           rotate: previousStage.belt.rotate,
           opacity: activeIndex === 0 ? 0 : score.ghostOpacity,
         }}
-        transition={{ type: 'spring', stiffness: 80, damping: 20, mass: 0.9 }}
+        transition={stageShiftTransition}
+        style={{ willChange: 'top, left, width, height, transform, opacity' }}
       >
         <div className="absolute inset-0 rounded-full border border-cyan-200/45 bg-cyan-300/10 blur-md" />
         <div className="absolute inset-[14%] rounded-full border border-white/35 bg-sky-200/12" />
@@ -314,7 +331,8 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           height: stage.belt.height,
           rotate: stage.belt.rotate,
         }}
-        transition={score.beltTransition}
+        transition={stageShiftTransition}
+        style={{ willChange: 'top, left, width, height, transform' }}
       >
         <div className="absolute inset-0 rounded-full blur-2xl" style={{ background: score.glowColor }} />
         <motion.div
@@ -381,11 +399,11 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#0e7490" floodOpacity="0.16" />
           </filter>
-          <marker id="arrowNorth" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-            <path d="M0 0 L6 3 L0 6 Z" fill="#0284c7" />
+          <marker id="arrowNorth" markerWidth="4.2" markerHeight="4.2" refX="3.8" refY="2.1" orient="auto">
+            <path d="M0 0 L4.2 2.1 L0 4.2 Z" fill="#0284c7" />
           </marker>
-          <marker id="arrowSouth" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto">
-            <path d="M0 0 L6 3 L0 6 Z" fill="#0f766e" />
+          <marker id="arrowSouth" markerWidth="4.2" markerHeight="4.2" refX="3.8" refY="2.1" orient="auto">
+            <path d="M0 0 L4.2 2.1 L0 4.2 Z" fill="#0f766e" />
           </marker>
         </defs>
 
@@ -408,25 +426,25 @@ function RainBeltMap({ stage, stages, activeIndex }) {
         </g>
 
         <path
-          d="M55 63 C62 62 69 62 79 62"
+          d="M55 50 C62 50 69 51 78 50"
           fill="none"
           stroke="#475569"
           strokeWidth="0.45"
           strokeDasharray="1.4 1.2"
           opacity="0.58"
         />
-        <text x="55.5" y="61.2" className="fill-slate-600 text-[2.5px] font-bold">
+        <text x="55.5" y="48.6" className="fill-slate-600 text-[2.5px] font-bold">
           秦岭-淮河
         </text>
         <path
-          d="M63 71 C69 69 76 70 84 68"
+          d="M63 57 C69 56 76 57 84 55"
           fill="none"
           stroke="#0891b2"
           strokeWidth="0.42"
           strokeDasharray="1.4 1.2"
           opacity="0.55"
         />
-        <text x="63.5" y="73.5" className="fill-cyan-800 text-[2.5px] font-bold">
+        <text x="63.5" y="59.5" className="fill-cyan-800 text-[2.5px] font-bold">
           长江中下游
         </text>
 
@@ -441,7 +459,7 @@ function RainBeltMap({ stage, stages, activeIndex }) {
               d={segment.d}
               fill="none"
               stroke={active ? score.pathColor : segment.color}
-              strokeWidth={active ? score.segmentWidth : 0.85}
+              strokeWidth={active ? score.segmentWidth : 0.62}
               strokeLinecap="round"
               strokeDasharray={active ? '5 3' : '2 4'}
               initial={false}
@@ -449,7 +467,7 @@ function RainBeltMap({ stage, stages, activeIndex }) {
                 pathLength: active ? 1 : completed ? 1 : 0.18,
                 opacity: active ? 0.9 : completed ? 0.36 : dimmed ? 0.16 : 0.28,
               }}
-              transition={{ duration: active ? score.segmentDuration : 0.5, ease: 'easeInOut' }}
+              transition={{ duration: active ? 0.52 : 0.32, ease: 'easeOut' }}
             />
           );
         })}
@@ -464,13 +482,13 @@ function RainBeltMap({ stage, stages, activeIndex }) {
               d={segment.d}
               fill="none"
               stroke={score.pathColor}
-              strokeWidth="2.6"
+              strokeWidth="1.55"
               strokeLinecap="round"
               strokeDasharray="0.1 7"
               markerEnd={score.marker}
               initial={{ strokeDashoffset: 10, opacity: 0 }}
               animate={{ strokeDashoffset: [12, 0], opacity: [0.18, 0.9, 0.28] }}
-              transition={{ duration: 1.35, repeat: Infinity, ease: 'linear' }}
+              transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
             />
           );
         })}
@@ -506,7 +524,7 @@ function RainBeltMap({ stage, stages, activeIndex }) {
             key={`${point.x}-${point.y}`}
             cx={point.x}
             cy={point.y}
-            r={index <= activeIndex ? 1.2 : 0.72}
+            r={index <= activeIndex ? 0.95 : 0.58}
             fill={index <= activeIndex ? '#0ea5e9' : '#94a3b8'}
             opacity={index <= activeIndex ? 0.92 : 0.42}
           />
@@ -520,7 +538,7 @@ function RainBeltMap({ stage, stages, activeIndex }) {
               <motion.circle
                 cx={region.x}
                 cy={region.y}
-                r={active ? 5.4 : 3.7}
+                r={active ? 4.5 : 3.2}
                 fill={active ? '#fef3c7' : '#ffffff'}
                 stroke={active ? '#0284c7' : '#94a3b8'}
                 strokeWidth={active ? 0.8 : 0.45}
@@ -542,17 +560,22 @@ function RainBeltMap({ stage, stages, activeIndex }) {
         <motion.circle
           cx={stage.hotspot.x}
           cy={stage.hotspot.y}
-          r="7"
+          r="6"
           fill="none"
           stroke="#22d3ee"
           strokeWidth="0.7"
           initial={false}
-          animate={{ cx: stage.hotspot.x, cy: stage.hotspot.y, r: [5.5, 8, 5.5], opacity: [0.55, 0.15, 0.55] }}
-          transition={{ duration: 1.8, repeat: Infinity, ease: 'easeInOut' }}
+          animate={{ cx: stage.hotspot.x, cy: stage.hotspot.y, r: [4.8, 7, 4.8], opacity: [0.5, 0.12, 0.5] }}
+          transition={{
+            cx: stageShiftTransition,
+            cy: stageShiftTransition,
+            r: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
+            opacity: { duration: 1.8, repeat: Infinity, ease: 'easeInOut' },
+          }}
         />
 
         <path
-          d="M76 82 C67 75 64 70 60 63"
+          d="M86 80 C80 75 74 66 70 59"
           fill="none"
           stroke="#06b6d4"
           strokeWidth="1"
@@ -560,7 +583,7 @@ function RainBeltMap({ stage, stages, activeIndex }) {
           strokeDasharray="3 2"
           opacity="0.72"
         />
-        <path d="M60 63 L63 64 L61 67" fill="none" stroke="#06b6d4" strokeWidth="1" strokeLinecap="round" />
+        <path d="M70 59 L72 61 L69 62" fill="none" stroke="#06b6d4" strokeWidth="0.8" strokeLinecap="round" />
       </svg>
 
       <div className="absolute right-5 top-5 z-20 w-44 rounded-md border border-cyan-800/10 bg-white/75 p-3 text-sm text-slate-700 shadow-sm backdrop-blur">

@@ -4,13 +4,13 @@ import { Map, Sparkles, ThermometerSun } from 'lucide-react';
 function StageCard({ stage, progress }) {
   return (
     <article className="stage-card flex-1 rounded-[20px] border border-cyan-900/10 bg-white/75 p-5 shadow-climate backdrop-blur-xl">
-      <AnimatePresence mode="wait">
+      <AnimatePresence initial={false} mode="popLayout">
         <motion.div
           key={stage.id}
-          initial={{ opacity: 0, x: 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -16 }}
-          transition={{ duration: 0.28 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.18, ease: 'easeOut' }}
         >
           <div className="mb-4 flex items-center justify-between gap-3">
             <div>

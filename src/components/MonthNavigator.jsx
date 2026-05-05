@@ -36,13 +36,12 @@ function MonthNavigator({ months, activeMonthId, activeStageId, onSelect }) {
               aria-pressed={exact}
               data-current-month-stage={related ? 'true' : 'false'}
             >
-              {exact && (
-                <motion.span
-                  layoutId="active-month-glow"
-                  className="absolute inset-0 bg-gradient-to-br from-cyan-100/90 via-white/30 to-amber-100/80"
-                  transition={{ type: 'spring', stiffness: 280, damping: 28 }}
-                />
-              )}
+              <motion.span
+                className="absolute inset-0 bg-gradient-to-br from-cyan-100/90 via-white/30 to-amber-100/80"
+                initial={false}
+                animate={{ opacity: exact ? 1 : 0 }}
+                transition={{ duration: 0.18, ease: 'easeOut' }}
+              />
               <span className="relative z-10 block text-sm font-black">{month.label}</span>
               <span className="relative z-10 mt-1 block text-xs font-bold">{month.phase}</span>
               <span className="relative z-10 mt-1 block text-[11px] font-semibold text-slate-500">{month.cue}</span>
